@@ -213,7 +213,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const message = {
     loading: 'img/forms/spinner.svg',
-    successe: 'Скоро мы с вами свяжемся',
+    success: 'Скоро мы с вами свяжемся',
     failure: 'Ошибка',
   };
 
@@ -233,10 +233,6 @@ window.addEventListener('DOMContentLoaded', () => {
       `;
       form.insertAdjacentElement('Afterend', statusMessage);
 
-      const request = new XMLHttpRequest();
-      request.open('POST', 'server.php');
-
-      request.setRequestHeader('Content-type', 'application/json');
       const formData = new FormData(form);
 
       const object = {};
@@ -244,20 +240,25 @@ window.addEventListener('DOMContentLoaded', () => {
         object[key] = value;
       });
 
-      const json = JSON.stringify(object);
-
-      request.send(json);
-
-      request.addEventListener('load', () => {
-        if (request.status === 200) {
-          console.log(request.response);
-          showThanksModal(message.successe);
-          form.reset();
+      fetch('server.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(object),
+      })
+        .then((data) => data.text())
+        .then((data) => {
+          console.log(data);
+          showThanksModal(message.success);
           statusMessage.remove();
-        } else {
+        })
+        .catch(() => {
           showThanksModal(message.failure);
-        }
-      });
+        })
+        .finally(() => {
+          form.reset();
+        });
     });
   }
 
